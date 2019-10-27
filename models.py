@@ -3,6 +3,8 @@ from sqlalchemy import Column, Integer, String, Date, ForeignKey, DateTime
 from datetime import timezone
 import datetime
 
+from sqlalchemy.orm import relationship
+
 Base = declarative_base()
 
 class User(Base):
@@ -10,7 +12,7 @@ class User(Base):
     id = Column(Integer, unique=True, primary_key=True)
     first_name = Column(String)
     last_name = Column(String)
-
+    messages = relationship("Message1")
     def __repr__(self):
         return "<User(FirstName='{}', LastName='{}')>" \
             .format(self.first_name, self.last_name)
@@ -21,7 +23,7 @@ class Message1(Base):
     update_id = Column(Integer, primary_key=True, unique=True)
     text = Column(String)
     #date = Column(DateTime=datetime.datetime.utcnow())
-    sender_id = Column(Integer, ForeignKey(User.id)) #ondelete="CASCADE"
+    sender_id = Column(Integer, ForeignKey('user.id')) #ondelete="CASCADE"
 
     def __repr__(self):
         return "<Message(text='{}', date='{}', sender_id='{}')>" \

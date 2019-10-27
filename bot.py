@@ -19,8 +19,9 @@ def send_welcome(message):
     user_id = message.from_user.id
     bot.reply_to(message, "Hi, zzzzver!")
     user = User(id=user_id, first_name=message.from_user.first_name, last_name=message.from_user.last_name)
-    s.add(user)
-    s.commit()
+    if user not in s.query(User).all():
+        s.add(user)
+        s.commit()
 
 @bot.message_handler(commands=['help', 'busyfromto'])
 def send_help(message):
@@ -30,7 +31,7 @@ def send_help(message):
 @bot.message_handler(func=lambda message: True)
 def upper(message: telebot.types.Message):
     bot.reply_to(message, message.text.upper())
-    #user = s.query(User).one()
+    #user = s.query(User).filter(id=message.from_user.id)
     msg = Message1(update_id=message.message_id, text=message.text, sender_id=message.from_user.id)
     s.add(msg)
     s.commit()
