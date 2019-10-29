@@ -1,7 +1,9 @@
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Integer, String, Date, ForeignKey, DateTime
-from datetime import timezone
 import datetime
+
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import Column, Integer, String, Date, ForeignKey, DateTime, Boolean
+#from datetime import timezone
+#import datetime
 
 from sqlalchemy.orm import relationship
 
@@ -13,6 +15,10 @@ class User(Base):
     first_name = Column(String)
     last_name = Column(String)
     messages = relationship("Message1")
+    #busy = Column(Boolean, default=False)
+    #busy_from_date = Column(Date, default=None)
+    #busy_to_date = Column(Date, default=None)
+
     def __repr__(self):
         return "<User(FirstName='{}', LastName='{}')>" \
             .format(self.first_name, self.last_name)
@@ -22,7 +28,7 @@ class Message1(Base):
     __tablename__ = 'message'
     update_id = Column(Integer, primary_key=True, unique=True)
     text = Column(String)
-    #date = Column(DateTime=datetime.datetime.utcnow())
+    date = Column(DateTime, default=datetime.datetime.utcnow)
     sender_id = Column(Integer, ForeignKey('user.id')) #ondelete="CASCADE"
 
     def __repr__(self):

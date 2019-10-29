@@ -11,6 +11,8 @@ psycopg2 = "*"
 flask = "*"
 telebot = "*"
 pytelegrambotapi = "*"
+telegram = "*"
+telegramcalendar = "*"
 
 [requires]
 python_version = "3.6"
