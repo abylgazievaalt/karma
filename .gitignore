@@ -3,3 +3,5 @@ config.py
 inline_calendar_shelve_db.bak
 inline_calendar_shelve_db.dat
 inline_calendar_shelve_db.dir
+*.pyc
+__pycache__
