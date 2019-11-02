@@ -15,6 +15,7 @@ class User(Base):
     first_name = Column(String)
     last_name = Column(String)
     messages = relationship("Message1")
+
     #busy = Column(Boolean, default=False)
     #busy_from_date = Column(Date, default=None)
     #busy_to_date = Column(Date, default=None)
@@ -30,7 +31,7 @@ class Message1(Base):
     text = Column(String)
     date = Column(DateTime, default=datetime.datetime.utcnow)
     sender_id = Column(Integer, ForeignKey('user.id')) #ondelete="CASCADE"
-
+    chat_id = Column(Integer)
     def __repr__(self):
         return "<Message(text='{}', date='{}', sender_id='{}')>" \
             .format(self.first_name, self.last_name, self.sender_id)
