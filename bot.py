@@ -1,23 +1,18 @@
 import datetime
-
 import psycopg2
 import telebot
-import telegram
-from sqlalchemy import MetaData
-
-from sqlalchemy.orm import sessionmaker, aliased
-from telebot import types
-
 import inline_calendar
+
+from sqlalchemy.orm import sessionmaker
+from telebot import types
 from config import TOKEN
 from crud import engine, recreate_database
 from models import User, Message1
-from telegramcalendar import create_calendar
 
 # Base.metadata.create_all(engine)
 
 current_shown_dates = {}
-#recreate_database()
+recreate_database()
 
 Session = sessionmaker(bind=engine)
 s = Session()
@@ -38,7 +33,38 @@ def send_welcome(message):
     else:
         bot.reply_to(message, "Hi, old zzzzver!")
 
+@bot.message_handler(commands=['busyfromto'])
+def busy_from(message):
+    markup = types.ForceReply(selective=False)
+    reply_msg = bot.send_message(chat_id=message.chat.id, text="Enter start date", reply_markup=markup)
+    bot.register_next_step_handler(reply_msg, savedatefrom)
 
+def savedatefrom(message):
+    chat_id = message.chat.id
+    msg = Message1(update_id=message.message_id, text=message.text, sender_id=message.from_user.id)
+    date = msg.text
+    list = date.split('/', maxsplit=2)
+    busy_from = datetime.datetime(int(list[2]), int(list[1]), int(list[0]))
+    user_id = message.from_user.id
+    user = s.query(User).get(message.from_user.id)
+    user.busy_from_date = busy_from
+    s.add(user)
+    s.commit()
+    markup = types.ForceReply(selective=False)
+    reply_msg = bot.send_message(chat_id=message.chat.id, text="Enter deadline date", reply_markup=markup)
+    bot.register_next_step_handler(reply_msg, savedateto)
+
+def savedateto(message):
+    chat_id = message.chat.id
+    msg = Message1(update_id=message.message_id, text=message.text, sender_id=message.from_user.id)
+    date = msg.text
+    list = date.split('/', maxsplit=2)
+    busy_to = datetime.datetime(int(list[2]), int(list[1]), int(list[0]))
+    user_id = message.from_user.id
+    user = s.query(User).get(message.from_user.id)
+    user.busy_to_date = busy_to
+    s.add(user)
+    s.commit()
 
 '''
 @bot.message_handler(commands=['calendar'])
@@ -53,24 +79,6 @@ def handle_calendar_command(message):
     markup = create_calendar(now.year, now.month)
 
     bot.send_message(message.chat.id, "Please, choose a date", reply_markup=markup)
-
-
-@bot.callback_query_handler(func=lambda call: 'DAY' in call.data[0:13])
-def handle_day_query(call):
-    chat_id = call.message.chat.id
-    saved_date = current_shown_dates.get(chat_id)
-    last_sep = call.data.rfind(';') + 1
-
-    if saved_date is not None:
-
-        day = call.data[last_sep:]
-        date = datetime.datetime(int(saved_date[0]), int(saved_date[1]), int(day), 0, 0, 0)
-        bot.send_message(chat_id=chat_id, text=str(date))
-        bot.answer_callback_query(call.id, text="")
-
-    else:
-        # add your reaction for shown an error
-        pass
 
 
 @bot.callback_query_handler(func=lambda call: 'MONTH' in call.data)
@@ -106,7 +114,7 @@ def ignore(call):
     bot.answer_callback_query(call.id, text="OOPS... something went wrong")
 
 '''
-
+'''
 @bot.message_handler(commands=['calendar'])
 def calendar_test(msg: types.Message):
     inline_calendar.init(msg.from_user.id,
@@ -133,23 +141,14 @@ def calendar_callback_handler(q: types.CallbackQuery):
     except inline_calendar.WrongChoiceCallbackException:
         bot.edit_message_text(text='Wrong choice', chat_id=q.from_user.id, message_id=q.message.message_id,
                               reply_markup=inline_calendar.get_keyboard(q.from_user.id))
-
+'''
 
 @bot.message_handler(commands=['help'])
 def send_help(message):
     bot.reply_to(message, bot.get_me())
 
-'''
-@bot.message_handler(commands=['getuser'])
-def send_message(message: telebot.types.Message):
-    # msg = Message1(update_id=message.message_id, text=message.from_user.messages, sender_id=message.from_user.id)
-    bot.send_message(message.from_user.id, Message1.text, 'Твои сообщения')
-    # s.add(msg)
-    # s.commit()
-'''
 
-
-@bot.message_handler(commands=['getuser'])
+@bot.message_handler(commands=['getactivity'])
 def get_users(message):
     connection = psycopg2.connect(user="postgres", password="Anbanb201299", host="localhost",
                                   port="5432", database="finalBotDb")
@@ -161,12 +160,52 @@ def get_users(message):
     normal = 1
     low = 0
 
+    user_id = message.from_user.id
+    user = s.query(User).get(message.from_user.id)
+
     if records[0][0] > 15:
         bot.reply_to(message, ('Activity: normal = {}, messages = %d'%records[0][0]).format(normal))
+        user.activity = 2
     elif records[0][0] > 30:
         bot.reply_to(message, ('Activity: high = {}, messages = %d'%records[0][0]).format(high))
+        user.activity = 4
     else:
         bot.reply_to(message, ('Activity: low = {}, messages = %d'%records[0][0]).format(low))
+
+
+@bot.message_handler(commands=['getbusypoints'])
+def get_users(message):
+    #connection = psycopg2.connect(user="postgres", password="Anbanb201299", host="localhost",
+    #                              port="5432", database="finalBotDb")
+    #cursor = connection.cursor()
+    #mes_id = message.from_user.id
+    #cursor.execute("select count(*) from message where sender_id = '%s'", [mes_id])
+    #records = cursor.fetchall()
+
+    user_id = message.from_user.id
+    user = s.query(User).get(message.from_user.id)
+
+    date_from = user.busy_from_date
+    date_to = user.busy_to_date
+    now = datetime.datetime.now()
+    date = date_from - date_to
+    #for i in
+    #dif = 0
+    if (date_to and date_to > now):
+        dif = now - date_from
+
+    print(dif)
+
+
+@bot.message_handler(commands=['getpoints'])
+def get_users(message):
+    connection = psycopg2.connect(user="postgres", password="Anbanb201299", host="localhost",
+                                  port="5432", database="finalBotDb")
+    cursor = connection.cursor()
+    mes_id = message.from_user.id
+    cursor.execute("select count(*) from message where sender_id = '%s'", [mes_id])
+    records = cursor.fetchall()
+
 
 @bot.message_handler(func=lambda message: True)
 def upper(message: telebot.types.Message):

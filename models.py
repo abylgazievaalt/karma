@@ -1,7 +1,7 @@
 import datetime
 
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Integer, String, Date, ForeignKey, DateTime, Boolean
+from sqlalchemy import Column, Integer, String, Date, ForeignKey, DateTime, Boolean, func
 #from datetime import timezone
 #import datetime
 
@@ -16,9 +16,14 @@ class User(Base):
     last_name = Column(String)
     messages = relationship("Message1")
 
-    #busy = Column(Boolean, default=False)
-    #busy_from_date = Column(Date, default=None)
-    #busy_to_date = Column(Date, default=None)
+    busy_from_date = Column(Date, default=None)
+    busy_to_date = Column(Date, default=None)
+
+    busy = Column(Integer, default=0)
+    activity = Column(Integer, default=0)
+    reports = Column(Integer, default=0)
+    mentee = Column(Integer, default=0)
+    points = Column(Integer, default=0)
 
     def __repr__(self):
         return "<User(FirstName='{}', LastName='{}')>" \
