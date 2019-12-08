@@ -13,6 +13,8 @@ telebot = "*"
 pytelegrambotapi = "*"
 telegram = "*"
 telegramcalendar = "*"
+schedule = "*"
+python-telegram-bot = "*"
 
 [requires]
 python_version = "3.6"

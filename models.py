@@ -19,11 +19,11 @@ class User(Base):
     busy_from_date = Column(Date, default=None)
     busy_to_date = Column(Date, default=None)
 
-    busy = Column(Integer, default=0)
-    activity = Column(Integer, default=0)
-    reports = Column(Integer, default=0)
-    mentee = Column(Integer, default=0)
-    points = Column(Integer, default=0)
+    busyness_points = Column(Integer, default=0)
+    activity_points = Column(Integer, default=0)
+    reports_points = Column(Integer, default=0)
+    mentorship_points = Column(Integer, default=0)
+    total_points = Column(Integer, default=0)
 
     def __repr__(self):
         return "<User(FirstName='{}', LastName='{}')>" \
