@@ -1,1 +1,1 @@
-web: python crud.py bot.py
+web: python bot.py
