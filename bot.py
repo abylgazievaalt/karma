@@ -185,6 +185,43 @@ def get_points(message):
     cursor.execute("select count(*) from message where sender_id = '%s'", [mes_id])
     records = cursor.fetchall()
 
+@bot.message_handler(commands=['mentee'])
+def do_forward_standup(message):
+    chat_id = message.chat.id
+    # entry_list = list(Profile.objects.all())
+    if chat_id == 602986718:
+        # Смотрим на реплаи
+        error_message = None
+        reply = message.reply_to_message
+        if reply:
+            forward_from = reply.forward_from
+            if forward_from:
+                text = 'Сообщение от тимлида:\n\n' + update.message.text
+                context.bot.send_message(
+                    chat_id=forward_from.id,
+                    text=text,
+                )
+                update.message.reply_text(
+                    text='Сообщение было отправлено',
+                )
+            else:
+                error_message = 'Нельзя ответить самому себе'
+        else:
+            error_message = 'Сделайте reply чтобы ответить автору сообщения'
+
+        # Отправить сообщение об ошибке если оно есть
+        if error_message is not None:
+            update.message.reply_text(
+                text=error_message,
+            )
+    else:
+        # Пересылать всё как есть
+        update.message.forward(
+            chat_id=602986718,
+        )
+        update.message.reply_text(
+            text='Сообщение было отправлено',
+        )
 
 @bot.message_handler(func=lambda message: True)
 def upper(message: telebot.types.Message):
