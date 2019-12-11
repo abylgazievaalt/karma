@@ -70,18 +70,18 @@ def increment_busyness():
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
     user_id = message.from_user.id
-
     user = s.query(User).get(message.from_user.id)
     if user not in s.query(User).all():
         bot.reply_to(message, "Hi, new zzzzver!")
         new_user = User(id=user_id, first_name=message.from_user.first_name, last_name=message.from_user.last_name)
         s.add(new_user)
         s.commit()
+
     else:
         bot.reply_to(message, "Hi, old zzzzver!")
 
 
-#schedule.every().sunday.at("12:35").do(increment_busyness)
+schedule.every().sunday.at("12:35").do(increment_busyness)
 
 @bot.message_handler(commands=['busyfromto'])
 def busy_from(message):
@@ -178,50 +178,107 @@ def get_users(message):
 
 @bot.message_handler(commands=['getpoints'])
 def get_points(message):
-    connection = psycopg2.connect(user="postgres", password="Anbanb201299", host="localhost",
-                                  port="5432", database="finalBotDb")
-    cursor = connection.cursor()
-    mes_id = message.from_user.id
-    cursor.execute("select count(*) from message where sender_id = '%s'", [mes_id])
-    records = cursor.fetchall()
+    #connection = psycopg2.connect(user="postgres", password="Anbanb201299", host="localhost",
+    #                              port="5432", database="finalBotDb")
+    #cursor = connection.cursor()
+
+    #cursor.execute("select busyness_points+activity_points+ from user where id = '%s'", [user_id])
+    #records = cursor.fetchall()
+
+    user_id = message.from_user.id
+    user = s.query(User).get(user_id)
+    total_points = user.busyness_points + user.activity_points + user.mentorship_points + user.reports_points
+    if total_points > 10:
+        total_points = 10
+    bot.send_message(chat_id=message.chat.id, text=total_points)
+
+
+@bot.message_handler(commands=['getmentorship'])
+def get_mentorship_points(message):
+    user_id = message.from_user.id
+    user = s.query(User).get(user_id)
+    bot.send_message(chat_id=message.chat.id, text=user.mentorship_points)
+
 
 @bot.message_handler(commands=['mentee'])
-def do_forward_standup(message):
-    chat_id = message.chat.id
-    # entry_list = list(Profile.objects.all())
-    if chat_id == 602986718:
-        # Смотрим на реплаи
-        error_message = None
-        reply = message.reply_to_message
-        if reply:
-            forward_from = reply.forward_from
-            if forward_from:
-                text = 'Сообщение от тимлида:\n\n' + update.message.text
-                context.bot.send_message(
-                    chat_id=forward_from.id,
-                    text=text,
-                )
-                update.message.reply_text(
-                    text='Сообщение было отправлено',
-                )
-            else:
-                error_message = 'Нельзя ответить самому себе'
-        else:
-            error_message = 'Сделайте reply чтобы ответить автору сообщения'
+def get_mentee_report(message):
+    chat_id_mentor = message.chat.id
+    # Форсим реплай
+    markup = types.ForceReply(selective=False)
+    reply = bot.send_message(chat_id=chat_id_mentor, text="Write a weekly report about your mentee.",
+                            reply_markup=markup)
+    bot.register_next_step_handler(reply, forward_msg)
 
-        # Отправить сообщение об ошибке если оно есть
-        if error_message is not None:
-            update.message.reply_text(
-                text=error_message,
-            )
-    else:
-        # Пересылать всё как есть
-        update.message.forward(
-            chat_id=602986718,
-        )
-        update.message.reply_text(
-            text='Сообщение было отправлено',
-        )
+# forward message to teamlead and require a feedback
+def forward_msg(message):
+    if message:
+        # msg from mentor
+        forward_msg.forward_from = message.chat.id  # mentor - bot chat
+        if forward_msg.forward_from:
+            forward_msg.mentor = s.query(User).get(message.from_user.id)
+            forward_msg.name = forward_msg.mentor.first_name
+            forward_to = 512225760 # teamlead - bot chat
+            # msg is sent to teamlead
+            bot.forward_message(forward_to, forward_msg.forward_from, message.message_id)
+            bot.send_message(chat_id=message.chat.id, text="Your message was sent to teamlead.")
+            markup = types.ForceReply(selective=False)
+            #require teamlead to write a feedback to mentor
+            reply = bot.send_message(chat_id=forward_to,
+                                     text="Give {0} a feedback.".format(forward_msg.name),
+                                     reply_markup=markup)
+
+            bot.register_next_step_handler(reply, forward_msg2)
+
+
+def forward_msg2(message):
+    forward_from = message.chat.id  # teamlead - bot chat
+    forward_to = forward_msg.forward_from
+    if message:
+        bot.forward_message(forward_to, forward_from, message.message_id)
+        bot.send_message(chat_id=forward_from, text="Your message was sent to {0}".format(forward_msg.name))
+
+    markup = types.ForceReply(selective=False)
+    reply = bot.send_message(chat_id=message.chat.id,
+                             text="Rate {0}'s communication with mentee.".format(forward_msg.name),
+                             reply_markup=markup)
+    bot.register_next_step_handler(reply, parse_points)
+
+def parse_points(message):
+    try:
+        points = int(message.text)
+        mentor = forward_msg.mentor
+        mentor.mentorship_points = points
+        bot.send_message(chat_id=message.chat.id, text="Rate points were saved in database.")
+        bot.send_message(chat_id=forward_msg.forward_from, text="Your mentorship points = {0}.".format(points))
+    except ValueError:
+        bot.send_message(chat_id=message.chat.id, text="It must be a number!")
+        markup = types.ForceReply(selective=False)
+        reply = bot.send_message(chat_id=message.chat.id,
+                                 text="Rate {0}'s communication with mentee.".format(forward_msg.name),
+                                 reply_markup=markup)
+        bot.register_next_step_handler(reply, parse_points)
+
+    #     if forward_from:
+    #         text = 'Сообщение от тимлида:\n\n' + message.text
+    #         bot.send_message(
+    #             chat_id=forward_from.id,
+    #             text=text,
+    #         )
+    #         reply = 'Сообщение было отправлено'
+    #     else:
+    #         error_message = 'Нельзя ответить самому себе'
+    # else:
+    #     error_message = 'Сделайте reply чтобы ответить автору сообщения'
+    #
+    # # Отправить сообщение об ошибке если оно есть
+    # # if error_message is not None:
+    # #     reply = error_message
+    # # else:
+    #     # Пересылать всё как есть
+    #     bot.forward_message(message.chat.id, 512225760)
+    #     bot.send_message(message.from_user.id,
+    #         text='Сообщение было отправлено',
+    #     )
 
 @bot.message_handler(func=lambda message: True)
 def upper(message: telebot.types.Message):
