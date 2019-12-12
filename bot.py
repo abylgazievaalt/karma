@@ -1,6 +1,7 @@
 import datetime
 import os
 import time
+import sys
 
 import psycopg2
 import telebot
@@ -9,26 +10,17 @@ import logging
 import flask
 from flask import Flask, request
 
+#from slackclient import SlackClient
 from sqlalchemy.orm import sessionmaker
-from telebot import types
+from telebot import types, apihelper
+from telegram.ext import Updater
+
 from config import TOKEN
 from crud import engine, recreate_database
 from models import User, Message1
 
 # Base.metadata.create_all(engine)
 # recreate_database()
-
-
-# WEBHOOK_HOST = 'https://api.telegram.org/bot%s/getWebhookInfo' % (TOKEN)
-# WEBHOOK_PORT = 8443  # 443, 80, 88 or 8443 (port need to be 'open')
-# WEBHOOK_LISTEN = '0.0.0.0'  # In some VPS you may need to put here the IP address
-
-
-# WEBHOOK_SSL_CERT = './webhook_cert.pem'  # Path to the ssl certificate
-# WEBHOOK_SSL_PRIV = './webhook_pkey.pem'  # Path to the ssl private key
-# WEBHOOK_URL_BASE = "https://%s:%s" % (WEBHOOK_HOST, WEBHOOK_PORT)
-# WEBHOOK_URL_PATH = "/%s/" % (TOKEN)
-
 
 Session = sessionmaker(bind=engine)
 s = Session()
@@ -39,20 +31,15 @@ telebot.logger.setLevel(logging.INFO)
 bot = telebot.TeleBot(TOKEN)
 app = flask.Flask(__name__)
 
+logger = telebot.logger
+telebot.logger.setLevel(logging.INFO)
+app = flask.Flask(__name__)
+
+
+# Empty webserver index, return nothing, just http 200
 @app.route('/', methods=['GET', 'HEAD'])
 def index():
-    return ''
-
-
-# @app.route(WEBHOOK_URL_PATH, methods=['POST'])
-# def webhook():
-#     if flask.request.headers.get('content-type') == 'application/json':
-#         json_string = flask.request.get_data().decode('utf-8')
-#         update = telebot.types.Update.de_json(json_string)
-#         bot.process_new_updates([update])
-#         return ''
-#     else:
-#         flask.abort(403)
+    return '<h1>Test Flask app</h1>'
 
 
 def increment_busyness():
@@ -62,9 +49,6 @@ def increment_busyness():
         now = datetime.date.today()
         if now >= date_from and now <= date_to:
             user.busyness_points += 4
-
-
-#schedule.every(3).seconds.do(increment_busyness)
 
 
 @bot.message_handler(commands=['start'])
@@ -178,13 +162,6 @@ def get_users(message):
 
 @bot.message_handler(commands=['getpoints'])
 def get_points(message):
-    #connection = psycopg2.connect(user="postgres", password="Anbanb201299", host="localhost",
-    #                              port="5432", database="finalBotDb")
-    #cursor = connection.cursor()
-
-    #cursor.execute("select busyness_points+activity_points+ from user where id = '%s'", [user_id])
-    #records = cursor.fetchall()
-
     user_id = message.from_user.id
     user = s.query(User).get(user_id)
     total_points = user.busyness_points + user.activity_points + user.mentorship_points + user.reports_points
@@ -229,7 +206,7 @@ def forward_msg(message):
 
             bot.register_next_step_handler(reply, forward_msg2)
 
-
+# force teamlead to rate mentor
 def forward_msg2(message):
     forward_from = message.chat.id  # teamlead - bot chat
     forward_to = forward_msg.forward_from
@@ -289,47 +266,8 @@ def upper(message: telebot.types.Message):
 
 
 if __name__ == '__main__':
-    # if "HEROKU" in list(os.environ.keys()):
-    #     logger = telebot.logger
-    #     telebot.logger.setLevel(logging.INFO)
-    #
-    #     server = Flask(__name__)
-    #
-    #     @server.route("/bot", methods=['POST'])
-    #     def getMessage():
-    #         bot.process_new_updates([telebot.types.Update.de_json(request.stream.read().decode("utf-8"))])
-    #         return "!", 200
-    #
-    #     @server.route("/")
-    #     def webhook():
-    #         bot.remove_webhook()
-    #         bot.set_webhook(
-    #             url="https://min-gallows.herokuapp.com/bot")  # этот url нужно заменить на url вашего Хероку приложения
-    #         return "?", 200
-    #
-    #
-    #     server.run(host="127.0.0.1", port=os.environ.get('PORT', WEBHOOK_PORT))
-    # else:
-    #     # если переменной окружения HEROKU нету, значит это запуск с машины разработчика.
-    #     # Удаляем вебхук на всякий случай, и запускаем с обычным поллингом.
-    #     bot.remove_webhook()
-
         time.sleep(0.1)
-
-        # Set webhook
-        # bot.set_webhook(url=WEBHOOK_URL_BASE + WEBHOOK_URL_PATH,
-        #                 # certificate=open(WEBHOOK_SSL_CERT, 'r')
-        #                 )
 
         schedule.run_pending()
 
-        # Start flask server
-        # app.run(host=WEBHOOK_LISTEN,
-        #         port=WEBHOOK_PORT,
-        #         #ssl_context=(WEBHOOK_SSL_CERT, WEBHOOK_SSL_PRIV),
-        #         debug=True,
-        #         threaded=True)
-
-        # app.run(threaded=True)
-        bot.polling()
-
+        app.run(debug=True)
