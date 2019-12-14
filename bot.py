@@ -243,7 +243,7 @@ if __name__ == '__main__':
     bot.remove_webhook()
     time.sleep(0.1)
     task = bot.get_me()
-    schedule.every(5).seconds.do(increment_busyness())
+    schedule.every(5).seconds.do(increment_busyness)
     result = task.wait()
     bot.polling()
 
