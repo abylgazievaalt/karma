@@ -34,6 +34,14 @@ bot = telebot.TeleBot(TOKEN)
 #                       url_path=TOKEN)
 # updater.bot.set_webhook("https://fast-bastion-58455.herokuapp.com/" + TOKEN)
 # updater.idle()
+def increment_busyness():
+    for user in s.query(User):
+        date_from = user.busy_from_date
+        date_to = user.busy_to_date
+        now = datetime.date.today()
+        if now >= date_from and now <= date_to:
+            user.busyness_points += 4
+
 
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
