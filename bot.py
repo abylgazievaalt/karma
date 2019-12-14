@@ -7,11 +7,11 @@ from sqlalchemy.orm import sessionmaker
 from telebot import types
 
 from config import TOKEN
-from crud import engine, recreate_database
+from crud import engine, recreate_database, Base
 from models import User, Message1
 
-# Base.metadata.create_all(engine)
-# recreate_database()
+Base.metadata.create_all(engine)
+recreate_database()
 
 Session = sessionmaker(bind=engine)
 s = Session()
