@@ -1,19 +1,15 @@
 import datetime
-import os
 import time
-import sys
-
 import psycopg2
 import telebot
 import schedule
 import logging
 import flask
-from flask import Flask, request
 
-#from slackclient import SlackClient
+from aiohttp import web
+from flask import request, Flask
 from sqlalchemy.orm import sessionmaker
-from telebot import types, apihelper
-from telegram.ext import Updater
+from telebot import types
 
 from config import TOKEN
 from crud import engine, recreate_database
@@ -30,16 +26,6 @@ telebot.logger.setLevel(logging.INFO)
 
 bot = telebot.TeleBot(TOKEN)
 app = flask.Flask(__name__)
-
-logger = telebot.logger
-telebot.logger.setLevel(logging.INFO)
-app = flask.Flask(__name__)
-
-
-# Empty webserver index, return nothing, just http 200
-@app.route('/', methods=['GET', 'HEAD'])
-def index():
-    return '<h1>Test Flask app</h1>'
 
 
 def increment_busyness():
@@ -265,9 +251,18 @@ def upper(message: telebot.types.Message):
     s.commit()
 
 
+@app.route("/{}".format(TOKEN), methods=['POST'])
+def getMessage():
+    bot.process_new_updates([telebot.types.Update.de_json(request.stream.read().decode("utf-8"))])
+    return "!", 200
+
+#bot.remove_webhook()
+
 if __name__ == '__main__':
-        time.sleep(0.1)
 
-        schedule.run_pending()
+    time.sleep(0.1)
 
-        app.run(debug=True)
+    schedule.run_pending()
+
+    app.run(host="127.0.0.1", port=80)
+

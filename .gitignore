@@ -5,3 +5,4 @@ inline_calendar_shelve_db.dat
 inline_calendar_shelve_db.dir
 *.pyc
 __pycache__
+venv/
