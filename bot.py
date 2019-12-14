@@ -244,10 +244,9 @@ def upper(message: telebot.types.Message):
 #     bot.process_new_updates([telebot.types.Update.de_json(request.stream.read().decode("utf-8"))])
 #     return "!", 200
 
-#bot.remove_webhook()
 
 if __name__ == '__main__':
-
+    bot.remove_webhook()
     time.sleep(0.1)
     bot.polling()
 
