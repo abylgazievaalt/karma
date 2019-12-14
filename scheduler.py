@@ -25,6 +25,9 @@ def scheduled_job():
         date_from = user.busy_from_date
         date_to = user.busy_to_date
         now = datetime.date.today()
+        print(now)
+        print(date_from)
+        print(date_to)
         if now >= date_from and now <= date_to:
             user.busyness_points += 4
 
