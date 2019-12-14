@@ -1,13 +1,14 @@
 import datetime
-
 import schedule
 from sqlalchemy.orm import sessionmaker
 from crud import engine
 from models import User
+from apscheduler.schedulers.blocking import BlockingScheduler
 
+sched = BlockingScheduler()
 Session = sessionmaker(bind=engine)
-s = Session()
 
+s = Session()
 def increment_busyness():
     for user in s.query(User):
         date_from = user.busy_from_date
@@ -16,8 +17,14 @@ def increment_busyness():
         if now >= date_from and now <= date_to:
             user.busyness_points += 4
 
-schedule.every(5).seconds.do(increment_busyness)
 
-if __name__ == '__main__':
+@sched.scheduled_job('interval', minutes=3)
+def timed_job():
+    increment_busyness()
 
-    schedule.run_pending()
+
+@sched.scheduled_job('cron', day_of_week='fri', hour=10)
+def scheduled_job():
+    increment_busyness()
+
+sched.start()
