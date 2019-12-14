@@ -18,7 +18,7 @@ def increment_busyness():
             user.busyness_points += 4
 
 
-@sched.scheduled_job('interval', minutes=3)
+@sched.scheduled_job('interval', seconds=5)
 def timed_job():
     increment_busyness()
 
