@@ -9,6 +9,7 @@ import time
 
 from sqlalchemy.orm import sessionmaker
 from telebot import types
+from telegram.ext import Updater
 
 from config import TOKEN
 from crud import engine, recreate_database, Base
@@ -24,7 +25,15 @@ logger = telebot.logger
 telebot.logger.setLevel(logging.INFO)
 
 bot = telebot.TeleBot(TOKEN)
-
+PORT = '8443'
+updater = Updater(TOKEN)
+# add handlers
+bot.remove_webhook()
+updater.start_webhook(listen="0.0.0.0",
+                      port=PORT,
+                      url_path=TOKEN)
+updater.bot.set_webhook("https://fast-bastion-58455.herokuapp.com/" + TOKEN)
+updater.idle()
 
 def increment_busyness():
     for user in s.query(User):
