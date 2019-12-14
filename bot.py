@@ -122,8 +122,9 @@ def send_help(message):
 
 @bot.message_handler(commands=['getactivity'])
 def get_users(message):
-    connection = psycopg2.connect(user="postgres", password="Anbanb201299", host="localhost",
-                                  port="5432", database="finalBotDb")
+    connection = psycopg2.connect(user="vqlfvkcnkzuume", password="81a15319c1db99efc5512dbba825a7d1f166d703a30414ea78d8793c2ee66ae1",
+                                  host="ec2-54-227-251-33.compute-1.amazonaws.com",
+                                  port="5432", database="d6q40l71aooi2i")
     cursor = connection.cursor()
     mes_id = message.from_user.id
     cursor.execute("select count(*) from message where sender_id = '%s'", [mes_id])
