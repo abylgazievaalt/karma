@@ -24,7 +24,7 @@ s = Session()
 logger = telebot.logger
 telebot.logger.setLevel(logging.INFO)
 
-bot = telebot.TeleBot(TOKEN)
+bot = telebot.AsyncTeleBot(TOKEN)
 
 # PORT = int(os.environ.get('PORT', '8443'))
 # updater = Updater(TOKEN, use_context=True)
@@ -242,6 +242,9 @@ def upper(message: telebot.types.Message):
 if __name__ == '__main__':
     bot.remove_webhook()
     time.sleep(0.1)
+    task = bot.get_me()
+    schedule.every(5).seconds.do(increment_busyness())
+    result = task.wait()
     bot.polling()
 
 
