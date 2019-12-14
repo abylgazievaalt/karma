@@ -3,6 +3,10 @@ import telebot
 import schedule
 import logging
 
+import datetime
+from datetime import timedelta
+import time
+
 from sqlalchemy.orm import sessionmaker
 from telebot import types
 
@@ -20,21 +24,7 @@ logger = telebot.logger
 telebot.logger.setLevel(logging.INFO)
 
 bot = telebot.TeleBot(TOKEN)
-#app = flask.Flask(__name__)
 
-
-import datetime
-from datetime import timedelta
-import time
-
-# busy_from = datetime.datetime(2019, 12, 10)
-# busy_to = datetime.datetime(2019, 12, 16)
-# now = datetime.datetime.today().weekday()
-# now_day = datetime.datetime.today()
-# a = (now_day - busy_to)
-# delta1 = timedelta(days=5)
-# print(a)
-# print(now)
 
 def increment_busyness():
     for user in s.query(User):
@@ -239,15 +229,9 @@ def upper(message: telebot.types.Message):
     s.commit()
 
 
-# @app.route("/{}".format(TOKEN), methods=['POST'])
-# def getMessage():
-#     bot.process_new_updates([telebot.types.Update.de_json(request.stream.read().decode("utf-8"))])
-#     return "!", 200
-
-
-if __name__ == '__main__':
-    bot.remove_webhook()
-    time.sleep(0.1)
-    bot.polling()
+# if __name__ == '__main__':
+#     bot.remove_webhook()
+#     time.sleep(0.1)
+#     bot.polling()
 
 
