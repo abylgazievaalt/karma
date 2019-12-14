@@ -1,1 +1,2 @@
-bot: python bot.py & python scheduler.py  & wait -n
+bot: python bot.py
+worker: python scheduler.py
