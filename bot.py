@@ -24,7 +24,7 @@ s = Session()
 logger = telebot.logger
 telebot.logger.setLevel(logging.INFO)
 
-bot = telebot.AsyncTeleBot(TOKEN)
+bot = telebot.TeleBot(TOKEN)
 
 # PORT = int(os.environ.get('PORT', '8443'))
 # updater = Updater(TOKEN, use_context=True)
