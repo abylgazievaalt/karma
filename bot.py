@@ -26,15 +26,14 @@ telebot.logger.setLevel(logging.INFO)
 
 bot = telebot.TeleBot(TOKEN)
 
-bot.remove_webhook()
-PORT = int(os.environ.get('PORT', '8443'))
-updater = Updater(TOKEN, use_context=True)
-# add handlers
-updater.start_webhook(listen="0.0.0.0",
-                      port=PORT,
-                      url_path=TOKEN)
-updater.bot.set_webhook("https://fast-bastion-58455.herokuapp.com/" + TOKEN)
-updater.idle()
+# PORT = int(os.environ.get('PORT', '8443'))
+# updater = Updater(TOKEN, use_context=True)
+# # add handlers
+# updater.start_webhook(listen="0.0.0.0",
+#                       port=PORT,
+#                       url_path=TOKEN)
+# updater.bot.set_webhook("https://fast-bastion-58455.herokuapp.com/" + TOKEN)
+# updater.idle()
 
 def increment_busyness():
     for user in s.query(User):
@@ -239,9 +238,9 @@ def upper(message: telebot.types.Message):
     s.commit()
 
 
-# if __name__ == '__main__':
-#     bot.remove_webhook()
-#     time.sleep(0.1)
-#     bot.polling()
+if __name__ == '__main__':
+    bot.remove_webhook()
+    time.sleep(0.1)
+    bot.polling()
 
 
