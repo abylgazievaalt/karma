@@ -35,15 +35,6 @@ bot = telebot.AsyncTeleBot(TOKEN)
 # updater.bot.set_webhook("https://fast-bastion-58455.herokuapp.com/" + TOKEN)
 # updater.idle()
 
-def increment_busyness():
-    for user in s.query(User):
-        date_from = user.busy_from_date
-        date_to = user.busy_to_date
-        now = datetime.date.today()
-        if now >= date_from and now <= date_to:
-            user.busyness_points += 4
-
-
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
     user_id = message.from_user.id
@@ -57,7 +48,6 @@ def send_welcome(message):
     else:
         bot.reply_to(message, "Hi, old zzzzver!")
 
-schedule.every().saturday.at("14:03").do(increment_busyness)
 
 @bot.message_handler(commands=['busyfromto'])
 def busy_from(message):
@@ -242,9 +232,6 @@ def upper(message: telebot.types.Message):
 if __name__ == '__main__':
     bot.remove_webhook()
     time.sleep(0.1)
-    task = bot.get_me()
-    schedule.every(5).seconds.do(increment_busyness)
-    result = task.wait()
     bot.polling()
 
 
