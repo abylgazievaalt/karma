@@ -14,11 +14,9 @@ def timed_job():
         date_from = user.busy_from_date
         date_to = user.busy_to_date
         now = datetime.date.today()
-        print(now)
-        print(date_from)
-        print(date_to)
-        # if now >= date_from and now <= date_to:
-        #     user.busyness_points += 4
+        if date_from and date_to:
+            if now >= date_from and now <= date_to:
+                user.busyness_points += 4
 
 @sched.scheduled_job('cron', day_of_week='fri', hour=10)
 def scheduled_job():
