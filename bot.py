@@ -6,7 +6,6 @@ import schedule
 import logging
 import flask
 
-from aiohttp import web
 from flask import request, Flask
 from sqlalchemy.orm import sessionmaker
 from telebot import types
