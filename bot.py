@@ -2,7 +2,7 @@ import psycopg2
 import telebot
 import schedule
 import logging
-
+import os
 import datetime
 from datetime import timedelta
 import time
@@ -25,10 +25,11 @@ logger = telebot.logger
 telebot.logger.setLevel(logging.INFO)
 
 bot = telebot.TeleBot(TOKEN)
-PORT = '8443'
+
+bot.remove_webhook()
+PORT = int(os.environ.get('PORT', '8443'))
 updater = Updater(TOKEN)
 # add handlers
-bot.remove_webhook()
 updater.start_webhook(listen="0.0.0.0",
                       port=PORT,
                       url_path=TOKEN)
