@@ -6,7 +6,7 @@ from models import User
 
 sched = BlockingScheduler()
 
-@sched.scheduled_job('interval', seconds=5)
+@sched.scheduled_job('interval', seconds=20)
 def timed_job():
     Session = sessionmaker(bind=engine)
     s = Session()
