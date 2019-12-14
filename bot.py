@@ -28,7 +28,7 @@ bot = telebot.TeleBot(TOKEN)
 
 bot.remove_webhook()
 PORT = int(os.environ.get('PORT', '8443'))
-updater = Updater(TOKEN)
+updater = Updater(TOKEN, use_context=True)
 # add handlers
 updater.start_webhook(listen="0.0.0.0",
                       port=PORT,
