@@ -1,12 +1,8 @@
-import datetime
-import time
 import psycopg2
 import telebot
 import schedule
 import logging
-import flask
 
-from flask import request, Flask
 from sqlalchemy.orm import sessionmaker
 from telebot import types
 
@@ -24,8 +20,21 @@ logger = telebot.logger
 telebot.logger.setLevel(logging.INFO)
 
 bot = telebot.TeleBot(TOKEN)
-app = flask.Flask(__name__)
+#app = flask.Flask(__name__)
 
+
+import datetime
+from datetime import timedelta
+import time
+
+busy_from = datetime.datetime(2019, 12, 10)
+busy_to = datetime.datetime(2019, 12, 16)
+now = datetime.datetime.today().weekday()
+now_day = datetime.datetime.today()
+a = (now_day - busy_to)
+delta1 = timedelta(days=5)
+print(a)
+print(now)
 
 def increment_busyness():
     for user in s.query(User):
@@ -49,8 +58,7 @@ def send_welcome(message):
     else:
         bot.reply_to(message, "Hi, old zzzzver!")
 
-
-schedule.every().sunday.at("12:35").do(increment_busyness)
+schedule.every().saturday.at("14:03").do(increment_busyness)
 
 @bot.message_handler(commands=['busyfromto'])
 def busy_from(message):
@@ -209,6 +217,8 @@ def parse_points(message):
     try:
         points = int(message.text)
         mentor = forward_msg.mentor
+        if points > 4:
+            points = 4
         mentor.mentorship_points = points
         bot.send_message(chat_id=message.chat.id, text="Rate points were saved in database.")
         bot.send_message(chat_id=forward_msg.forward_from, text="Your mentorship points = {0}.".format(points))
@@ -216,31 +226,10 @@ def parse_points(message):
         bot.send_message(chat_id=message.chat.id, text="It must be a number!")
         markup = types.ForceReply(selective=False)
         reply = bot.send_message(chat_id=message.chat.id,
-                                 text="Rate {0}'s communication with mentee.".format(forward_msg.name),
+                                 text="Rate {0}'s communication with mentee in range 0-4.".format(forward_msg.name),
                                  reply_markup=markup)
         bot.register_next_step_handler(reply, parse_points)
 
-    #     if forward_from:
-    #         text = 'Сообщение от тимлида:\n\n' + message.text
-    #         bot.send_message(
-    #             chat_id=forward_from.id,
-    #             text=text,
-    #         )
-    #         reply = 'Сообщение было отправлено'
-    #     else:
-    #         error_message = 'Нельзя ответить самому себе'
-    # else:
-    #     error_message = 'Сделайте reply чтобы ответить автору сообщения'
-    #
-    # # Отправить сообщение об ошибке если оно есть
-    # # if error_message is not None:
-    # #     reply = error_message
-    # # else:
-    #     # Пересылать всё как есть
-    #     bot.forward_message(message.chat.id, 512225760)
-    #     bot.send_message(message.from_user.id,
-    #         text='Сообщение было отправлено',
-    #     )
 
 @bot.message_handler(func=lambda message: True)
 def upper(message: telebot.types.Message):
@@ -250,18 +239,16 @@ def upper(message: telebot.types.Message):
     s.commit()
 
 
-@app.route("/{}".format(TOKEN), methods=['POST'])
-def getMessage():
-    bot.process_new_updates([telebot.types.Update.de_json(request.stream.read().decode("utf-8"))])
-    return "!", 200
+# @app.route("/{}".format(TOKEN), methods=['POST'])
+# def getMessage():
+#     bot.process_new_updates([telebot.types.Update.de_json(request.stream.read().decode("utf-8"))])
+#     return "!", 200
 
 #bot.remove_webhook()
 
 if __name__ == '__main__':
 
     time.sleep(0.1)
+    bot.polling()
 
-    schedule.run_pending()
-
-    app.run()
 
