@@ -27,14 +27,14 @@ import datetime
 from datetime import timedelta
 import time
 
-busy_from = datetime.datetime(2019, 12, 10)
-busy_to = datetime.datetime(2019, 12, 16)
-now = datetime.datetime.today().weekday()
-now_day = datetime.datetime.today()
-a = (now_day - busy_to)
-delta1 = timedelta(days=5)
-print(a)
-print(now)
+# busy_from = datetime.datetime(2019, 12, 10)
+# busy_to = datetime.datetime(2019, 12, 16)
+# now = datetime.datetime.today().weekday()
+# now_day = datetime.datetime.today()
+# a = (now_day - busy_to)
+# delta1 = timedelta(days=5)
+# print(a)
+# print(now)
 
 def increment_busyness():
     for user in s.query(User):
