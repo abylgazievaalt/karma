@@ -155,10 +155,8 @@ def get_users(message):
 def get_points(message):
     user_id = message.from_user.id
     user = s.query(User).get(user_id)
-    total_points = user.busyness_points + user.activity_points + user.mentorship_points + user.reports_points
-    if total_points > 10:
-        total_points = 10
-    bot.send_message(chat_id=message.chat.id, text=total_points)
+    user.total_points += user.busyness_points + user.activity_points + user.mentorship_points + user.reports_points
+    bot.send_message(chat_id=message.chat.id, text=user.total_points)
 
 
 @bot.message_handler(commands=['getmentorship'])

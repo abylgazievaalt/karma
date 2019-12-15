@@ -19,7 +19,9 @@ def timed_job():
         print(date_to)
         if date_from and date_to:
             if now >= date_from and now <= date_to:
-                user.busyness_points += 4
+                user.busyness_points = 4
+                s.add(user)
+                s.commit()
 
 @sched.scheduled_job('cron', day_of_week='fri', hour=10)
 def scheduled_job():
